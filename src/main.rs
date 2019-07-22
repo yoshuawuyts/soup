@@ -24,8 +24,16 @@ pub struct Cli {
     #[structopt(short = "a", long = "address", default_value = "127.0.0.1")]
     pub address: String,
     /// Insecure HTTP port
-    #[structopt(short = "p", long = "port", env = "PORT", default_value = "80")]
+    #[structopt(short = "p", long = "port", env = "PORT")]
     pub port: u16,
+}
+
+pub(crate) fn create_app() -> tide::App<()> {
+    let mut app = tide::App::new();
+    app.middleware(middleware::logger::Logger::new());
+    app.at("/").get(views::index);
+    app.at("/bundle.css").get(views::css);
+    app
 }
 
 #[runtime::main]
@@ -36,22 +44,14 @@ async fn main() -> Result<(), Exception> {
     let http_service = app.into_http_service();
     let mut listener = runtime::net::TcpListener::bind((&*args.address, args.port))
         .map_err(|e| {
-            log::error!("cannot connect to {}:{:?}", &*args.address, args.port);
+            log::error!("cannot open {}:{:?}", args.address, args.port);
             e
         })?;
-    log::info!("listening on {}", listener.local_addr()?);
+    log::info!("Server listening on {}", listener.local_addr()?);
     let server = http_service_hyper::Server::builder(listener.incoming())
         .with_spawner(runtime::task::Spawner::new());
     server.serve(http_service).await?;
     Ok(())
-}
-
-
-pub(crate) fn create_app() -> tide::App<()> {
-    let mut app = tide::App::new();
-    app.middleware(middleware::logger::Logger::new());
-    app.at("/").get(|_| async move { "Hello, world!" });
-    app
 }
 
 fn log_level(n: u8) -> log::LevelFilter {
