@@ -1,1 +1,1 @@
-pub mod logger;
+pub(crate) mod logger;
