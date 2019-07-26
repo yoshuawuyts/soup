@@ -16,5 +16,6 @@ pub(crate) async fn view(_cx: Context<()>) -> tide::EndpointResult {
         .header(http::header::CONTENT_TYPE, mime::TEXT_HTML.as_ref())
         .status(http::StatusCode::OK)
         .body(html.as_bytes().into()).unwrap();
+
     Ok(res)
 }

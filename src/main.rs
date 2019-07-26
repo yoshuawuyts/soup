@@ -32,6 +32,7 @@ pub(crate) fn create_app() -> tide::App<()> {
     let mut app = tide::App::new();
     app.middleware(middleware::logger::Logger::new());
     app.at("/").get(views::index);
+    app.at("/").get(views::index);
     app.at("/bundle.css").get(views::css);
     app
 }
